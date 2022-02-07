@@ -1,0 +1,30 @@
+<header class="header">
+  {{ #if page.is_home }}
+  <h1 class="logo">
+    <a class="site-name" href="{{ abs-url "" }}">{{ site.title }}</a><a class="btn-dark"></a>
+  </h1>
+  {{ else }}
+  <p class="logo">
+    <a class="site-name" href="{{ abs-url "" }}">{{ site.title }}</a><a class="btn-dark"></a>
+  </p>
+  {{ /if }}
+
+  <script>
+    let bodyClx = document.body.classList;
+    let btnDark = document.querySelector('.btn-dark');
+    let sysDark = window.matchMedia('(prefers-color-scheme: dark)');
+    let darkVal = localStorage.getItem('dark');
+
+    let setDark = (isDark) => {
+      bodyClx[isDark ? 'add' : 'remove']('dark');
+      localStorage.setItem('dark', isDark ? 'yes' : 'no');
+    };
+
+    setDark(darkVal ? darkVal === 'yes' : sysDark.matches);
+    requestAnimationFrame(() => bodyClx.remove('not-ready'));
+
+    btnDark.addEventListener('click', () => setDark(!bodyClx.contains('dark')));
+    sysDark.addEventListener('change', (event) => setDark(event.matches));
+  </script>
+
+</header>
