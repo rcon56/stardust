@@ -6,23 +6,34 @@ use anyhow;
 
 use super::render::{RenderContext, Renderable};
 
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PageData {
+    pub content: String,
+    pub summary: String,
+    pub author: String,
+    pub has_menu: bool,
+    pub is_home: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Page {
+    pub file_dir: String,
     pub url_path: String,
-    pub tpl_path: String,
-    pub content: String,
+    pub tpl_name: String,
+    pub data: PageData,
 }
 
 impl Renderable for Page {
     fn render_to_write(&self, ctx: &RenderContext) -> anyhow::Result<()> {
         
         let mut data = Map::new();
-        data.insert("site".to_string(), to_json(ctx.site));
-        data.insert("page".to_string(), to_json(self));
+        data.insert("site".to_string(), to_json(&ctx.site.data));
+        data.insert("page".to_string(), to_json(&self.data));
 
-        let mut output_file = File::create(ctx.site.base_dir + &self.url_path)?;
+        let output_file = File::create(format!("{}{}", &self.file_dir, &self.url_path))?;
 
-        ctx.tpl_render.render_to_write(&self.tpl_path, &data, output_file)?;
+        ctx.tpl_render.render_to_write(&self.tpl_name, &data, output_file)?;
 
         Ok(())
     }

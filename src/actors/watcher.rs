@@ -16,7 +16,7 @@ impl Watcher {
     pub fn from_config(config: &Config) -> Watcher {
         Watcher {
             hotwatch: Hotwatch::new().expect("hotwatch failed to initialize!"),
-            dir: config.post_dir,
+            dir: config.post_dir.clone(),
         }
     }
     
@@ -43,8 +43,13 @@ impl Watcher {
 //        self.watch().expect("failed to watch");
 
         let builder = Builder::from_config(config);
+        builder.build(ctx)?;
 
-        self.hotwatch.watch(&self.dir, |_| { println!("Rebuilding..."); })?;
+        let abs_post_dir = format!("{}{}", &ctx.site.base_dir, &self.dir);
+
+        self.hotwatch.watch(&abs_post_dir, |_| { 
+            println!("Rebuilding..."); 
+        })?;
 
         loop {
             thread::sleep(Duration::from_secs(1));
