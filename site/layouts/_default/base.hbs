@@ -11,10 +11,14 @@
 
     {{!-- <main class="main">{{> (lookup . 'main') }}</main> --}}
     <main class="main">
-      {{ #if page.is_home }}
+      {{ #if (eq page.kind "main") }}
         <h1 class="main-title">StarDust</h1>
       {{ else }}
-        {{ > single }}
+        {{ #if (eq page.kind "post") }}
+          {{ > single }}
+        {{ else }}
+          {{ > list }}
+        {{ /if }}
       {{ /if }}
     </main>
 

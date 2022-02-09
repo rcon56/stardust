@@ -7,7 +7,8 @@ use crate::actors::render::BASE_TEMPLATE;
 use super::poster::Poster;
 use super::render::{RenderContext, Renderable};
 use super::page::{Page, PageData};
-use super::post::Post;
+use super::post::{Post, Front};
+use super::list::{List, Entry};
 use super::config::Config;
 
 pub struct Builder {
@@ -38,9 +39,13 @@ impl Builder {
         self.make_main().render_to_write(ctx)?;
         println!("Build main page ok.");
 
-        self.find_posts()
-            .into_iter()
-            .try_for_each(|p| self.make_post(p).render_to_write(ctx) )?;
+        let posts = self.find_posts();
+
+        for post in posts.iter() {
+            self.make_post(post).render_to_write(ctx)?;
+        }
+
+        self.make_list("posts", &posts).render_to_write(ctx)?;
 
         println!("Build posts ok.");
 
@@ -52,31 +57,24 @@ impl Builder {
         Poster::read_md_in_dir(&self.post_dir)
             .iter()
             .map(|(front, body)| -> anyhow::Result<Post> {
+
                 println!("? front: {:?}, body: {:?}", front, body);
-                let mut post: Post = serde_yaml::from_str(front)?;
+                let post_front: Front = serde_yaml::from_str(front)?;
                 let parser = pulldown_cmark::Parser::new_ext(&body,  pulldown_cmark::Options::all());  // TODO: options
                 let mut content = String::new();
                 pulldown_cmark::html::push_html(&mut content, parser);
-                post.content = Some(content);
-                println!("post: {:?}", post);
-                Ok(post)
+                
+                Ok(Post {
+                    url: format!("/posts/{}", title2path(&post_front.title)),
+                    date: post_front.date,
+                    author: post_front.author.unwrap_or("Unknown".to_string()),
+                    title: post_front.title,
+                    tags: post_front.tags.unwrap_or(vec!()),
+                    content: content,
+                })
             })
             .filter_map(|r| r.ok() )
             .collect()
-
-        // let mdv: Vec<String> = walkdir::WalkDir::new(&self.input_dir)
-        //     .into_iter()
-        //     .filter_map(|e| e.ok())
-        //     .filter(|e| e.path().display().to_string().ends_with(".md"))
-        //     .map(|e| e.path().display().to_string())
-        //     .map(|f| fs::read_to_string(&f).unwrap_or("".to_string()) )
-        //     .map(|md| {
-        //         let parser = pulldown_cmark::Parser::new_ext(&md,  pulldown_cmark::Options::all());
-        //         let mut body = String::new();
-        //         pulldown_cmark::html::push_html(&mut body, parser);
-        //         body
-        //     })
-        //     .collect();
 
         // vec![Post {
         //     date: "Feb 8 2022".to_string(),
@@ -97,30 +95,53 @@ impl Builder {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: false,
-                is_home: true,
+                kind: "main".to_string(),
             },
             item: None,
         }
     }
 
 
-    fn make_post(&self, post: Post) -> Page<Post> {
+    fn make_post(&self, post: &Post) -> Page<Post> {
         Page {
             file_dir: self.output_dir.to_string(),
-            url_path: format!("/posts/{}", title2path(&post.title)),
+            url_path: post.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             data: PageData {
                 content: "".to_string(),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: false,
-                is_home: false,
+                kind: "post".to_string(),
             },
-            item: Some(post),
+            item: Some(post.clone()),
+        }
+    }
+
+    fn make_list(&self, list_name: &str, posts: &[Post]) -> Page<List> {
+        Page {
+            file_dir: self.output_dir.to_string(),
+            url_path: format!("/{}", list_name),
+            tpl_name: BASE_TEMPLATE.to_string(),
+            data: PageData {
+                content: "".to_string(),
+                summary: "This is summary.".to_string(),
+                author: "lds56".to_string(),
+                has_menu: false,
+                kind: "list".to_string(),
+            },
+            item: Some(List {
+                date: "DATE".to_string(),
+                title: list_name.to_string(),
+                entries: posts.iter().map(|p| Entry {
+                    title: p.title.clone(),
+                    date: p.date.clone(),
+                    url: p.url.clone(),
+                }).collect(),
+            })
         }
     }
 }
-
 
 fn title2path(title: &str) -> String {
     title

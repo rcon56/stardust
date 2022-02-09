@@ -1,0 +1,16 @@
+<!-- Main Title -->
+<h1 class="main-title">{{ list.title }}</h1>
+
+<!-- $pages -->
+
+<!-- Articles -->
+{{ #each list.entries }}
+<article class="post-entry">
+  <h2>{{ title }}</h2>
+  <time>{{ date }}</time>
+  <a href="{{ abs-url url }}"></a>
+</article>
+{{ /each }}
+
+<!-- Main Nav -->
+

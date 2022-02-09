@@ -10,6 +10,7 @@ const FOOTER_TEMPLATE: &str = "footer";
 const HEAD_TEMPLATE: &str = "head";
 const HEADER_TEMPLATE: &str = "header";
 const POST_TEMPLATE: &str = "single";
+const LIST_TEMPLATE: &str = "list";
 
 #[derive(Debug, Clone)]
 pub struct RenderContext<'a> {
@@ -40,6 +41,10 @@ impl<'a> RenderContext<'a> {
         ctx.tpl_render
             .register_template_file(POST_TEMPLATE, format!("{}{}/_default/single.hbs", &config.base_dir, &config.layout_dir))
             .expect("Register post template error");
+
+        ctx.tpl_render
+            .register_template_file(LIST_TEMPLATE, format!("{}{}/_default/list.hbs", &config.base_dir, &config.layout_dir))
+            .expect("Register list template error");
 
         ctx.tpl_render
             .register_template_file(FOOTER_TEMPLATE, format!("{}{}/partials/footer.hbs", &config.base_dir, &config.layout_dir))

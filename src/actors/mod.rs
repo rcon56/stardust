@@ -9,3 +9,4 @@ use crate::models::site;
 use crate::models::page;
 use crate::models::config;
 use crate::models::post;
+use crate::models::list;

@@ -14,8 +14,8 @@ pub struct PageData {
     pub content: String,
     pub summary: String,
     pub author: String,
+    pub kind: String,
     pub has_menu: bool,
-    pub is_home: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
