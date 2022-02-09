@@ -2,7 +2,6 @@ use std::{net::SocketAddr, str::FromStr, convert::Infallible};
 use anyhow;
 use axum::{http::StatusCode, service, Router};
 use tower_http::services::ServeDir;
-use handlebars::Handlebars;
 
 use super::render::RenderContext;
 use super::watcher::Watcher;

@@ -9,6 +9,7 @@ pub const BASE_TEMPLATE: &str = "base";
 const FOOTER_TEMPLATE: &str = "footer";
 const HEAD_TEMPLATE: &str = "head";
 const HEADER_TEMPLATE: &str = "header";
+const POST_TEMPLATE: &str = "single";
 
 #[derive(Debug, Clone)]
 pub struct RenderContext<'a> {
@@ -35,6 +36,10 @@ impl<'a> RenderContext<'a> {
         ctx.tpl_render
             .register_template_file(BASE_TEMPLATE, format!("{}{}/_default/base.hbs", &config.base_dir, &config.layout_dir))
             .expect("Register base template error");
+
+        ctx.tpl_render
+            .register_template_file(POST_TEMPLATE, format!("{}{}/_default/single.hbs", &config.base_dir, &config.layout_dir))
+            .expect("Register post template error");
 
         ctx.tpl_render
             .register_template_file(FOOTER_TEMPLATE, format!("{}{}/partials/footer.hbs", &config.base_dir, &config.layout_dir))
