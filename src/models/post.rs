@@ -17,7 +17,6 @@ pub struct Post {
     pub author: String,
     pub title: String,
     pub tags: Vec<String>,
-    pub url: String,
     pub content: String,
 }
 
@@ -28,10 +27,3 @@ impl Item for Post {
 }
 
 
-// <footer class="post-tags">
-// {{#each post.tags}}
-// <!-- "tags/"  -->
-//     <a href="{{ abs-url . }}">{{ . }}</a>
-// {{/each}}
-
-// </footer>

@@ -3,6 +3,7 @@ use anyhow::{Result, bail};
 
 mod actors;
 mod models;
+mod utils;
 
 #[derive(Clone, Parser, Debug)]
 #[clap(author = "rcon", version = "0.0.1", about = "Handshake with Stardust", long_about = None)]

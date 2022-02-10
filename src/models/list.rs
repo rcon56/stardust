@@ -6,7 +6,6 @@ use super::item::Item;
 pub struct Entry {
     pub title: String,
     pub date: String,
-    pub url: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

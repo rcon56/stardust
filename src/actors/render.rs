@@ -2,6 +2,8 @@ use anyhow;
 use handlebars::Handlebars;
 // use pulldown_cmark::Parser;
 
+use crate::utils;
+
 use super::site::Site;
 use super::config::Config;
 
@@ -61,6 +63,10 @@ impl<'a> RenderContext<'a> {
         ctx.tpl_render
             .register_helper("abs-url", Box::new(abs_url_helper));
 
+        ctx.tpl_render
+            .register_helper("as-path", Box::new(path_helper));
+
+
         return ctx;
     }
 }
@@ -72,14 +78,20 @@ fn abs_url_helper(
     _: &mut handlebars::RenderContext,
     out: &mut dyn handlebars::Output,
 ) -> Result<(), handlebars::RenderError> {
+
+    let url = h.params()
+        .iter()
+        .filter_map(|p| p.value().as_str() )
+        .collect::<Vec<&str>>()
+        .join("/");
     
     // get parameter from helper or throw an error
-    let param = h
-        .param(0)
-        .ok_or(handlebars::RenderError::new("Param 0 is required for abs-url helper."))?
-        .value()
-        .as_str()
-        .ok_or(handlebars::RenderError::new("Param 0 is required to be string."))?;
+    // let param = h
+    //     .param(0)
+    //     .ok_or(handlebars::RenderError::new("Param 0 is required for abs-url helper."))?
+    //     .value()
+    //     .as_str()
+    //     .ok_or(handlebars::RenderError::new("Param 0 is required to be string."))?;
 
     let abs_prefix = c.data()
         .get("site")
@@ -89,7 +101,26 @@ fn abs_url_helper(
         .as_str()
         .ok_or(handlebars::RenderError::new("`site.base_url` is required to be string"))?;
 
-    let rendered = format!("http://{}/{}", abs_prefix, param);
+    let rendered = format!("http://{}/{}", abs_prefix, url);
     out.write(rendered.as_ref())?;
+    Ok(())
+}
+
+fn path_helper(
+    h: &handlebars::Helper,
+    _: &handlebars::Handlebars,
+    c: &handlebars::Context,
+    _: &mut handlebars::RenderContext,
+    out: &mut dyn handlebars::Output,
+) -> Result<(), handlebars::RenderError> {
+
+    let param = h
+        .param(0)
+        .ok_or(handlebars::RenderError::new("Param 0 is required for path helper."))?
+        .value()
+        .as_str()
+        .ok_or(handlebars::RenderError::new("Param 0 is required to be string."))?;
+
+    out.write(&utils::str2path(param))?;
     Ok(())
 }

@@ -11,7 +11,11 @@
   <section class="post-content">{{{ post.content }}}</section>
 
   <!-- Post Tags -->
-
+   <footer class="post-tags">
+   {{ #each post.tags as |t| }}
+       <a href="{{ abs-url "tag" t }}">{{ t }}</a>
+   {{ /each }}
+   </footer>
 
   <!-- Post Nav -->
   

@@ -1,11 +1,12 @@
 // use std::fs;
 // use std::collections::BTreeMap;
+use std::collections::HashSet;
 use anyhow;
 
-use crate::actors::render::BASE_TEMPLATE;
+use crate::utils;
 
 use super::poster::Poster;
-use super::render::{RenderContext, Renderable};
+use super::render::{RenderContext, Renderable, BASE_TEMPLATE};
 use super::page::{Page, PageData};
 use super::post::{Post, Front};
 use super::list::{List, Entry};
@@ -25,13 +26,6 @@ impl Builder {
         }
     }
 
-    // pub fn new(idir: &str, odir: &str) -> Builder {
-    //     Builder {
-    //         input_dir: idir.to_string(),
-    //         output_dir: odir.to_string(),
-    //     }
-    // }
-
     pub fn build(&self, ctx: &RenderContext) -> anyhow::Result<()> {
 
 //        println!("? main page: {:?}", main_page);
@@ -40,12 +34,29 @@ impl Builder {
         println!("Build main page ok.");
 
         let posts = self.find_posts();
+        let tags: HashSet<String> = HashSet::from_iter(
+            posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
 
         for post in posts.iter() {
             self.make_post(post).render_to_write(ctx)?;
         }
 
-        self.make_list("posts", &posts).render_to_write(ctx)?;
+        /////////////////// tags //////////////////////
+        // self.make_post(&Post {
+        //     date: "".to_string(),
+        //     author: "".to_string(),
+        //     title: "tag/all".to_string(),
+        //     tags: tags.iter().cloned().collect::<Vec<String>>(),
+        //     content: "".to_string(),
+        // }).render_to_write(ctx)?;
+        ///////////////////////////////////////////////
+
+        self.make_list("post", &posts).render_to_write(ctx)?;
+
+        for tag in tags.iter() {
+            self.make_filter_list(&format!("tag/{}", tag), &posts, 
+                |p| p.tags.contains(tag)).render_to_write(ctx)?;
+        }
 
         println!("Build posts ok.");
 
@@ -65,7 +76,6 @@ impl Builder {
                 pulldown_cmark::html::push_html(&mut content, parser);
                 
                 Ok(Post {
-                    url: format!("/posts/{}", title2path(&post_front.title)),
                     date: post_front.date,
                     author: post_front.author.unwrap_or("Unknown".to_string()),
                     title: post_front.title,
@@ -101,11 +111,10 @@ impl Builder {
         }
     }
 
-
     fn make_post(&self, post: &Post) -> Page<Post> {
         Page {
             file_dir: self.output_dir.to_string(),
-            url_path: post.url.to_string(),
+            url_path: format!("/post/{}", utils::str2path(&post.title)),
             tpl_name: BASE_TEMPLATE.to_string(),
             data: PageData {
                 content: "".to_string(),
@@ -118,7 +127,12 @@ impl Builder {
         }
     }
 
+
     fn make_list(&self, list_name: &str, posts: &[Post]) -> Page<List> {
+        self.make_filter_list(list_name, posts, |_| true)
+    }
+
+    fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> Page<List> {
         Page {
             file_dir: self.output_dir.to_string(),
             url_path: format!("/{}", list_name),
@@ -133,21 +147,12 @@ impl Builder {
             item: Some(List {
                 date: "DATE".to_string(),
                 title: list_name.to_string(),
-                entries: posts.iter().map(|p| Entry {
+                entries: posts.iter().filter(pred).map(|p| Entry {
                     title: p.title.clone(),
                     date: p.date.clone(),
-                    url: p.url.clone(),
                 }).collect(),
             })
         }
     }
-}
 
-fn title2path(title: &str) -> String {
-    title
-        .to_lowercase()
-        .chars()
-        .map(|c| if c == ' ' {'-'} else {c})
-        .filter(|c| c == &'-' || c.is_alphanumeric())
-        .collect()
 }
