@@ -17,7 +17,11 @@
         {{ #if (eq page.kind "post") }}
           {{ > single }}
         {{ else }}
-          {{ > list }}
+          {{ #if (eq page.kind "list") }}
+            {{ > list }}
+          {{ else }}
+            {{ > coll }}
+          {{ /if }}
         {{ /if }}
       {{ /if }}
     </main>
