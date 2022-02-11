@@ -13,6 +13,7 @@ const HEAD_TEMPLATE: &str = "head";
 const HEADER_TEMPLATE: &str = "header";
 const POST_TEMPLATE: &str = "single";
 const LIST_TEMPLATE: &str = "list";
+const COLL_TEMPLATE: &str = "coll";
 
 #[derive(Debug, Clone)]
 pub struct RenderContext<'a> {
@@ -47,6 +48,10 @@ impl<'a> RenderContext<'a> {
         ctx.tpl_render
             .register_template_file(LIST_TEMPLATE, format!("{}{}/_default/list.hbs", &config.base_dir, &config.layout_dir))
             .expect("Register list template error");
+
+        ctx.tpl_render
+            .register_template_file(COLL_TEMPLATE, format!("{}{}/_default/coll.hbs", &config.base_dir, &config.layout_dir))
+            .expect("Register coll template error");
 
         ctx.tpl_render
             .register_template_file(FOOTER_TEMPLATE, format!("{}{}/partials/footer.hbs", &config.base_dir, &config.layout_dir))

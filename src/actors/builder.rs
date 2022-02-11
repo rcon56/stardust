@@ -1,6 +1,6 @@
 // use std::fs;
 // use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use anyhow;
 
 use crate::utils;
@@ -10,6 +10,7 @@ use super::render::{RenderContext, Renderable, BASE_TEMPLATE};
 use super::page::{Page, PageData};
 use super::post::{Post, Front};
 use super::list::{List, Entry};
+use super::coll::{Coll, CollEntry};
 use super::config::Config;
 
 pub struct Builder {
@@ -34,8 +35,17 @@ impl Builder {
         println!("Build main page ok.");
 
         let posts = self.find_posts();
-        let tags: HashSet<String> = HashSet::from_iter(
-            posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
+        // let tags: HashSet<String> = HashSet::from_iter(
+           // posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
+
+        let mut tag2posts = HashMap::new();
+        for post in posts.iter() {
+            for tag in post.tags.iter() {
+                tag2posts.entry(tag)
+                    .or_insert(vec![])
+                    .push(post);
+            }
+        }
 
         for post in posts.iter() {
             self.make_post(post).render_to_write(ctx)?;
@@ -51,11 +61,12 @@ impl Builder {
         // }).render_to_write(ctx)?;
         ///////////////////////////////////////////////
 
-        self.make_list("post", &posts).render_to_write(ctx)?;
+        self.make_list("post", &posts.iter().collect::<Vec<_>>()).render_to_write(ctx)?;
 
-        for tag in tags.iter() {
-            self.make_filter_list(&format!("tag/{}", tag), &posts, 
-                |p| p.tags.contains(tag)).render_to_write(ctx)?;
+        self.make_coll("tag", &tag2posts).render_to_write(ctx)?;
+
+        for (tag, part_posts) in tag2posts.iter() {
+            self.make_list(&format!("tag/{}", tag), part_posts).render_to_write(ctx)?;
         }
 
         println!("Build posts ok.");
@@ -127,9 +138,52 @@ impl Builder {
         }
     }
 
+    fn make_coll(&self, coll_name:& str, post_group: &HashMap<&String, Vec<&Post>>) -> Page<Coll> {
+        Page {
+            file_dir: self.output_dir.to_string(),
+            url_path: format!("/{}", coll_name),
+            tpl_name: BASE_TEMPLATE.to_string(),
+            data: PageData {
+                content: "".to_string(),
+                summary: "This is summary.".to_string(),
+                author: "lds56".to_string(),
+                has_menu: false,
+                kind: "coll".to_string(),
+            },
+            item: Some(Coll {
+                title: coll_name.to_string(),
+                kind: coll_name.to_string(),
+                entries: post_group.iter().map(|(k, p)| 
+                    CollEntry {
+                        title: k.to_string(),
+                        count: p.len(),
+                    }).collect()
+            }),
+        }
+    }
 
-    fn make_list(&self, list_name: &str, posts: &[Post]) -> Page<List> {
-        self.make_filter_list(list_name, posts, |_| true)
+
+    fn make_list(&self, list_name: &str, posts: &[&Post]) -> Page<List> {
+        Page {
+            file_dir: self.output_dir.to_string(),
+            url_path: format!("/{}", list_name),
+            tpl_name: BASE_TEMPLATE.to_string(),
+            data: PageData {
+                content: "".to_string(),
+                summary: "This is summary.".to_string(),
+                author: "lds56".to_string(),
+                has_menu: false,
+                kind: "list".to_string(),
+            },
+            item: Some(List {
+                date: "DATE".to_string(),
+                title: list_name.to_string(),
+                entries: posts.iter().map(|p| Entry {
+                    title: p.title.clone(),
+                    date: p.date.clone(),
+                }).collect(),
+            })
+        }
     }
 
     fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> Page<List> {

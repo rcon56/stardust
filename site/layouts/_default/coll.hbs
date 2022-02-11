@@ -1,0 +1,23 @@
+<article class="post-single">
+
+  <header class="post-title">
+    <h1>{{ coll.title }}</h1>
+  </header>
+
+  <!-- Post Tags -->
+   <footer class="post-tags">
+   {{ #each coll.entries as |e| }}
+       <a href="{{ abs-url coll.kind (as-path e.title) }}">
+         {{ e.title }}
+         <sup><strong><sup>{{ e.count }}</sup></strong></sup>
+       </a>
+   {{ /each }}
+   </footer>
+
+  <!-- Post Nav -->
+  
+
+  <!-- Disqus -->
+  
+</article>
+
