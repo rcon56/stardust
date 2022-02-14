@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
 
-use super::item::Item;
+use super::page::Block;
 
+const KIND: &str = "post";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Front {
@@ -18,11 +19,12 @@ pub struct Post {
     pub title: String,
     pub tags: Vec<String>,
     pub content: String,
+    pub url: String,
 }
 
-impl Item for Post {
-    fn render_key(&self) -> &str {
-        "post"
+impl Block for Post {
+    fn kind(&self) -> &str {
+        KIND
     }
 }
 

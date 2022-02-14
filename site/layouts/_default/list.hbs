@@ -6,13 +6,15 @@
 <!-- $pages -->
 
 <!-- Articles -->
-{{ #each list.entries }}
-<article class="post-entry">
-  <h2>{{ title }}</h2>
-  <time>{{ date }}</time>
-  <a href="{{ abs-url "post" (as-path title) }}"></a>
-</article>
-{{ /each }}
+{{ #with list as | list | }}
+  {{ #each list.entries }}
+  <article class="post-entry">
+    <h2>{{ title }}</h2>
+    <time>{{ date }}</time>
+    <a href="{{ abs-url list.kind (as-path title)  }}"></a>
+  </article>
+  {{ /each }}
+{{ /with }}
 
 <!-- Main Nav -->
 

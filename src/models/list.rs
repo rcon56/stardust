@@ -1,22 +1,25 @@
 use serde::{Serialize, Deserialize};
 
-use super::item::Item;
+use super::page::Block;
+
+const KIND: &str = "list";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Entry {
+pub struct ListEntry {
     pub title: String,
     pub date: String,
+    pub count: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct List {
-    pub date: String,
     pub title: String,
-    pub entries: Vec<Entry>,
+    pub kind: String,
+    pub entries: Vec<ListEntry>,
 }
 
-impl Item for List {
-    fn render_key(&self) -> &str {
+impl Block for List {
+    fn kind(&self) -> &str {
         "list"
     }
 }

@@ -5,9 +5,18 @@ use serde_json::Map;
 use handlebars::to_json;
 use anyhow;
 
-use super::item::Item;
 use super::render::{RenderContext, Renderable};
 
+pub trait Block {
+    fn kind(&self) -> &str;
+}
+
+
+pub struct PageArg<'a> {
+    pub title: &'a str,
+    pub url: &'a str,
+    pub ekind: Option<&'a str>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageData {
@@ -19,25 +28,25 @@ pub struct PageData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Page<T: Item + Serialize> {
+pub struct Page<T: Block + Serialize> {
     pub file_dir: String,
     pub url_path: String,
     pub tpl_name: String,
     pub data: PageData,
-    pub item: Option<T>,
+    pub block: Option<T>,
 }
 
-impl<T> Renderable for Page<T> where T: Item + Serialize {
+impl<T> Renderable for Page<T> where T: Block + Serialize {
     fn render_to_write(&self, ctx: &RenderContext) -> anyhow::Result<()> {
         
         let mut data = Map::new();
         data.insert("site".to_string(), to_json(&ctx.site.data));
         data.insert("page".to_string(), to_json(&self.data));
-        if let Some(it) = &self.item {
-            data.insert(it.render_key().to_string(), to_json(it));
+        if let Some(it) = &self.block {
+            data.insert(it.kind().to_string(), to_json(it));
         }
 
-//        println!("data: {:?}", data);
+        // println!("data: {:?}", data);
         let file_path = format!("{}{}", &self.file_dir, &self.url_path);
         println!("dir: {:?}", &file_path);
 

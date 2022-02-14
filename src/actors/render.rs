@@ -89,6 +89,10 @@ fn abs_url_helper(
         .filter_map(|p| p.value().as_str() )
         .collect::<Vec<&str>>()
         .join("/");
+
+
+    // println!("param---: {:?}", h.params());
+    // println!("url---: {}", url);
     
     // get parameter from helper or throw an error
     // let param = h

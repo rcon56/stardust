@@ -7,10 +7,9 @@ use crate::utils;
 
 use super::poster::Poster;
 use super::render::{RenderContext, Renderable, BASE_TEMPLATE};
-use super::page::{Page, PageData};
+use super::page::{Page, PageData, PageArg};
 use super::post::{Post, Front};
-use super::list::{List, Entry};
-use super::coll::{Coll, CollEntry};
+use super::list::{List, ListEntry};
 use super::config::Config;
 
 pub struct Builder {
@@ -61,12 +60,16 @@ impl Builder {
         // }).render_to_write(ctx)?;
         ///////////////////////////////////////////////
 
-        self.make_list("post", &posts.iter().collect::<Vec<_>>()).render_to_write(ctx)?;
+        self.make_list(&PageArg {title: "POSTS", url: "/posts", ekind: Some("post")}, 
+            &posts.iter().collect::<Vec<_>>()
+        ).render_to_write(ctx)?;
 
-        self.make_coll("tag", &tag2posts).render_to_write(ctx)?;
+        self.make_coll(&PageArg{title: "TAGS", url: "/tags", ekind: Some("tag")},
+            &tag2posts).render_to_write(ctx)?;
 
         for (tag, part_posts) in tag2posts.iter() {
-            self.make_list(&format!("tag/{}", tag), part_posts).render_to_write(ctx)?;
+            self.make_list(&PageArg{title: tag, url: &format!("/tag/{}", tag), ekind: Some("post")},
+                part_posts).render_to_write(ctx)?;
         }
 
         println!("Build posts ok.");
@@ -87,6 +90,7 @@ impl Builder {
                 pulldown_cmark::html::push_html(&mut content, parser);
                 
                 Ok(Post {
+                    url: format!("/post/{}", utils::str2path(&post_front.title)),
                     date: post_front.date,
                     author: post_front.author.unwrap_or("Unknown".to_string()),
                     title: post_front.title,
@@ -118,7 +122,7 @@ impl Builder {
                 has_menu: false,
                 kind: "main".to_string(),
             },
-            item: None,
+            block: None,
         }
     }
 
@@ -134,14 +138,14 @@ impl Builder {
                 has_menu: false,
                 kind: "post".to_string(),
             },
-            item: Some(post.clone()),
+            block: Some(post.clone()),
         }
     }
 
-    fn make_coll(&self, coll_name:& str, post_group: &HashMap<&String, Vec<&Post>>) -> Page<Coll> {
+    fn make_coll(&self, arg: &PageArg, post_group: &HashMap<&String, Vec<&Post>>) -> Page<List> {
         Page {
             file_dir: self.output_dir.to_string(),
-            url_path: format!("/{}", coll_name),
+            url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             data: PageData {
                 content: "".to_string(),
@@ -150,12 +154,13 @@ impl Builder {
                 has_menu: false,
                 kind: "coll".to_string(),
             },
-            item: Some(Coll {
-                title: coll_name.to_string(),
-                kind: coll_name.to_string(),
+            block: Some(List {
+                title: arg.title.to_string(),
+                kind: arg.ekind.unwrap_or("").to_string(),
                 entries: post_group.iter().map(|(k, p)| 
-                    CollEntry {
+                    ListEntry {
                         title: k.to_string(),
+                        date: "".to_string(),
                         count: p.len(),
                     }).collect()
             }),
@@ -163,10 +168,10 @@ impl Builder {
     }
 
 
-    fn make_list(&self, list_name: &str, posts: &[&Post]) -> Page<List> {
+    fn make_list(&self,  arg: &PageArg, posts: &[&Post]) -> Page<List> {
         Page {
             file_dir: self.output_dir.to_string(),
-            url_path: format!("/{}", list_name),
+            url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             data: PageData {
                 content: "".to_string(),
@@ -175,38 +180,39 @@ impl Builder {
                 has_menu: false,
                 kind: "list".to_string(),
             },
-            item: Some(List {
-                date: "DATE".to_string(),
-                title: list_name.to_string(),
-                entries: posts.iter().map(|p| Entry {
+            block: Some(List {
+                kind: arg.ekind.unwrap_or("").to_string(),
+                title: arg.title.to_string(),
+                entries: posts.iter().map(|p| ListEntry {
                     title: p.title.clone(),
                     date: p.date.clone(),
+                    count: 1usize,
                 }).collect(),
             })
         }
     }
 
-    fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> Page<List> {
-        Page {
-            file_dir: self.output_dir.to_string(),
-            url_path: format!("/{}", list_name),
-            tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
-                summary: "This is summary.".to_string(),
-                author: "lds56".to_string(),
-                has_menu: false,
-                kind: "list".to_string(),
-            },
-            item: Some(List {
-                date: "DATE".to_string(),
-                title: list_name.to_string(),
-                entries: posts.iter().filter(pred).map(|p| Entry {
-                    title: p.title.clone(),
-                    date: p.date.clone(),
-                }).collect(),
-            })
-        }
-    }
+    // fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> Page<List> {
+    //     Page {
+    //         file_dir: self.output_dir.to_string(),
+    //         url_path: format!("/{}", list_name),
+    //         tpl_name: BASE_TEMPLATE.to_string(),
+    //         data: PageData {
+    //             content: "".to_string(),
+    //             summary: "This is summary.".to_string(),
+    //             author: "lds56".to_string(),
+    //             has_menu: false,
+    //             kind: "list".to_string(),
+    //         },
+    //         item: Some(List {
+    //             date: "DATE".to_string(),
+    //             title: list_name.to_string(),
+    //             entries: posts.iter().filter(pred).map(|p| Entry {
+    //                 title: p.title.clone(),
+    //                 date: p.date.clone(),
+    //             }).collect(),
+    //         })
+    //     }
+    // }
 
 }
