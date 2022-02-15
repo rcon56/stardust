@@ -46,6 +46,13 @@ impl Builder {
             }
         }
 
+        let mut cate2posts = HashMap::new();
+        for post in posts.iter() {
+            cate2posts.entry(&post.category)
+                .or_insert(vec![])
+                .push(post);
+        }
+
         for post in posts.iter() {
             self.make_post(post).render_to_write(ctx)?;
         }
@@ -60,16 +67,24 @@ impl Builder {
         // }).render_to_write(ctx)?;
         ///////////////////////////////////////////////
 
-        self.make_list(&PageArg {title: "POSTS", url: "/posts", ekind: Some("post")}, 
+        self.make_list(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, 
             &posts.iter().collect::<Vec<_>>()
         ).render_to_write(ctx)?;
 
-        self.make_coll(&PageArg{title: "TAGS", url: "/tags", ekind: Some("tag")},
+        self.make_coll(&PageArg{title: "TAGS", url: "/tag", ekind: Some("tag")},
             &tag2posts).render_to_write(ctx)?;
 
-        for (tag, part_posts) in tag2posts.iter() {
+        self.make_coll(&PageArg{title: "CATEGORIES", url: "/category", ekind: Some("category")},
+            &cate2posts).render_to_write(ctx)?;
+
+        for (tag, posts_in_tag) in tag2posts.iter() {
             self.make_list(&PageArg{title: tag, url: &format!("/tag/{}", tag), ekind: Some("post")},
-                part_posts).render_to_write(ctx)?;
+                posts_in_tag).render_to_write(ctx)?;
+        }
+
+        for (tag, posts_in_cate) in cate2posts.iter() {
+            self.make_list(&PageArg{title: tag, url: &format!("/category/{}", tag), ekind: Some("post")},
+                posts_in_cate).render_to_write(ctx)?;
         }
 
         println!("Build posts ok.");
@@ -94,6 +109,7 @@ impl Builder {
                     date: post_front.date,
                     author: post_front.author.unwrap_or("Unknown".to_string()),
                     title: post_front.title,
+                    category: post_front.category.unwrap_or("".to_string()),
                     tags: post_front.tags.unwrap_or(vec!()),
                     content: content,
                 })

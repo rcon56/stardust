@@ -4,7 +4,7 @@
     <p>
       <time>{{ post.date }}</time>
       <span>{{ post.author }}</span>
-      {{ end }}
+      <span>/{{ post.category }}</span>
     </p>
     <h1>{{ post.title }}</h1>
   </header>
@@ -12,6 +12,7 @@
 
   <!-- Post Tags -->
    <footer class="post-tags">
+       <a class="round-tag" href="{{ abs-url "category" post.category }}">{{ post.category }}</a>
    {{ #each post.tags as |t| }}
        <a href="{{ abs-url "tag" t }}">{{ t }}</a>
    {{ /each }}
