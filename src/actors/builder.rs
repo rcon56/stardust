@@ -34,6 +34,7 @@ impl Builder {
         println!("Build main page ok.");
 
         let posts = self.find_posts();
+        // println!("Posts: {:?}", posts);
         // let tags: HashSet<String> = HashSet::from_iter(
            // posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
 
@@ -100,19 +101,14 @@ impl Builder {
 
                 println!("? front: {:?}, body: {:?}", front, body);
                 let post_front: Front = serde_yaml::from_str(front)?;
+                let post_url = format!("/post/{}", utils::str2path(&post_front.title));
+
                 let parser = pulldown_cmark::Parser::new_ext(&body,  pulldown_cmark::Options::all());  // TODO: options
                 let mut content = String::new();
                 pulldown_cmark::html::push_html(&mut content, parser);
                 
-                Ok(Post {
-                    url: format!("/post/{}", utils::str2path(&post_front.title)),
-                    date: post_front.date,
-                    author: post_front.author.unwrap_or("Unknown".to_string()),
-                    title: post_front.title,
-                    category: post_front.category.unwrap_or("".to_string()),
-                    tags: post_front.tags.unwrap_or(vec!()),
-                    content: content,
-                })
+                Post::write(post_front,  post_url, content)
+
             })
             .filter_map(|r| r.ok() )
             .collect()
@@ -201,7 +197,7 @@ impl Builder {
                 title: arg.title.to_string(),
                 entries: posts.iter().map(|p| ListEntry {
                     title: p.title.clone(),
-                    date: p.date.clone(),
+                    date: p.date_str(),
                     count: 1usize,
                 }).collect(),
             })

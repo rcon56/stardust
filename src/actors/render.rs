@@ -90,7 +90,6 @@ fn abs_url_helper(
         .collect::<Vec<&str>>()
         .join("/");
 
-
     // println!("param---: {:?}", h.params());
     // println!("url---: {}", url);
     
