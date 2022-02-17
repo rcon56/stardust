@@ -3,6 +3,7 @@
 use std::collections::{HashSet, HashMap};
 use anyhow;
 
+use crate::models::paginator::Paginator;
 use crate::utils;
 
 use super::poster::Poster;
@@ -11,6 +12,8 @@ use super::page::{Page, PageData, PageArg};
 use super::post::{Post, Front};
 use super::list::{List, ListEntry};
 use super::config::Config;
+
+const POST_NUM_PER_PAGE: usize = 2;
 
 pub struct Builder {
     post_dir: String,
@@ -33,7 +36,8 @@ impl Builder {
         self.make_main().render_to_write(ctx)?;
         println!("Build main page ok.");
 
-        let posts = self.find_posts();
+        let mut posts = self.find_posts();
+        posts.sort();
         // println!("Posts: {:?}", posts);
         // let tags: HashSet<String> = HashSet::from_iter(
            // posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
@@ -67,10 +71,9 @@ impl Builder {
         //     content: "".to_string(),
         // }).render_to_write(ctx)?;
         ///////////////////////////////////////////////
-
-        self.make_list(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, 
-            &posts.iter().collect::<Vec<_>>()
-        ).render_to_write(ctx)?;
+        self.make_lists_with_paginator(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, &posts.iter().collect::<Vec<_>>())
+            .iter()
+            .try_for_each(|p| p.render_to_write(ctx).ok());
 
         self.make_coll(&PageArg{title: "TAGS", url: "/tag", ekind: Some("tag")},
             &tag2posts).render_to_write(ctx)?;
@@ -79,13 +82,15 @@ impl Builder {
             &cate2posts).render_to_write(ctx)?;
 
         for (tag, posts_in_tag) in tag2posts.iter() {
-            self.make_list(&PageArg{title: tag, url: &format!("/tag/{}", tag), ekind: Some("post")},
-                posts_in_tag).render_to_write(ctx)?;
+            self.make_lists_with_paginator(&PageArg{title: tag, url: &format!("/tag/{}", tag), ekind: Some("post")}, posts_in_tag)
+                .iter()
+                .try_for_each(|p| p.render_to_write(ctx).ok());
         }
 
         for (tag, posts_in_cate) in cate2posts.iter() {
-            self.make_list(&PageArg{title: tag, url: &format!("/category/{}", tag), ekind: Some("post")},
-                posts_in_cate).render_to_write(ctx)?;
+            self.make_lists_with_paginator(&PageArg{title: tag, url: &format!("/category/{}", tag), ekind: Some("post")}, posts_in_cate)
+                .iter()
+                .try_for_each(|p| p.render_to_write(ctx).ok());                
         }
 
         println!("Build posts ok.");
@@ -135,6 +140,7 @@ impl Builder {
                 kind: "main".to_string(),
             },
             block: None,
+            paginator: None,
         }
     }
 
@@ -151,6 +157,7 @@ impl Builder {
                 kind: "post".to_string(),
             },
             block: Some(post.clone()),
+            paginator: None,   // TODO: add post paginator
         }
     }
 
@@ -176,11 +183,27 @@ impl Builder {
                         count: p.len(),
                     }).collect()
             }),
+            paginator: None,
         }
     }
 
+    fn make_lists_with_paginator(&self, arg: &PageArg, posts: &[&Post]) -> Vec<Page<List>> {
+        let pg_sz = (posts.len() as f32 / POST_NUM_PER_PAGE as f32).ceil() as usize;
+        posts.chunks(POST_NUM_PER_PAGE)
+            .enumerate()
+            .map(|(pg_idx, post_chunk)| -> Page<List> {
+                let pg = Paginator::new_at(pg_sz, pg_idx as i32, arg.url);
+                self.make_list(&PageArg {
+                    title: arg.title, 
+                    url: &Paginator::gen_url(pg_sz, pg_idx as i32, arg.url).unwrap_or("".to_string()), 
+                    ekind: Some("post"),
+                }, post_chunk, Some(pg))
+            })
+            .collect()
+    }
 
-    fn make_list(&self,  arg: &PageArg, posts: &[&Post]) -> Page<List> {
+
+    fn make_list(&self, arg: &PageArg, posts: &[&Post], pg: Option<Paginator>) -> Page<List> {
         Page {
             file_dir: self.output_dir.to_string(),
             url_path: arg.url.to_string(),
@@ -200,7 +223,8 @@ impl Builder {
                     date: p.date_str(),
                     count: 1usize,
                 }).collect(),
-            })
+            }),
+            paginator: pg,
         }
     }
 

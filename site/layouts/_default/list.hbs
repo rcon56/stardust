@@ -17,4 +17,13 @@
 {{ /with }}
 
 <!-- Main Nav -->
-
+{{ #if (gt paginator.num 1) }}
+<nav class="main-nav">
+  {{ #if paginator.has_prev }}
+  <a class="prev" href="{{ paginator.prev_url }}">←  Prev Page</a>
+  {{ /if }}<!---->
+  {{ #if paginator.has_next }}
+  <a class="next" href="{{ paginator.next_url }}">Next Page  →</a>
+  {{ /if }}
+</nav>
+{{ /if }}<!---->

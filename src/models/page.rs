@@ -5,6 +5,7 @@ use serde_json::Map;
 use handlebars::to_json;
 use anyhow;
 
+use super::paginator::Paginator;
 use super::render::{RenderContext, Renderable};
 
 pub trait Block {
@@ -34,6 +35,7 @@ pub struct Page<T: Block + Serialize> {
     pub tpl_name: String,
     pub data: PageData,
     pub block: Option<T>,
+    pub paginator: Option<Paginator>,
 }
 
 impl<T> Renderable for Page<T> where T: Block + Serialize {
@@ -44,6 +46,9 @@ impl<T> Renderable for Page<T> where T: Block + Serialize {
         data.insert("page".to_string(), to_json(&self.data));
         if let Some(it) = &self.block {
             data.insert(it.kind().to_string(), to_json(it));
+        }
+        if let Some(pg) = &self.paginator {
+            data.insert("paginator".to_string(), to_json(pg));
         }
 
         // println!("data: {:?}", data);

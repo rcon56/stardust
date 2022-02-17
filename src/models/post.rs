@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use anyhow;
 use serde::{Serialize, Deserialize, Serializer};
 use time::{Date, Time};
@@ -21,7 +23,7 @@ pub struct Front {
     pub tags: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, Serialize)]
 pub struct Post {
     #[serde(serialize_with = "serialize_date")]
     pub date: Date,
@@ -61,6 +63,15 @@ impl Post {
 impl Block for Post {
     fn kind(&self) -> &str {
         KIND
+    }
+}
+
+impl PartialOrd for Post {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.date == other.date {
+            return Some(self.time.cmp(&other.time));
+        }
+        Some(self.date.cmp(&other.date))
     }
 }
 
