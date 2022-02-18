@@ -8,11 +8,7 @@
    <footer class="post-tags">
   {{ #with list as | list | }}
     {{ #each list.entries as |e| }}
-        {{ #if (eq list.kind "tag") }}
-        <a href="{{ abs-url list.kind (as-path e.title) }}">
-        {{ else }}
-        <a class="round-tag" href="{{ abs-url list.kind (as-path e.title) }}">
-        {{ /if }}
+        <a class={{#if (eq list.kind "tag")}}"square-tag"{{else}}"round-tag"{{/if}} href="{{ abs-url list.kind (as-path e.title) }}">
           {{ e.title }}
           <sup><strong><sup>{{ e.count }}</sup></strong></sup>
         </a>

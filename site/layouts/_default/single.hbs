@@ -12,9 +12,9 @@
 
   <!-- Post Tags -->
    <footer class="post-tags">
-       <a class="round-tag" href="{{ abs-url "category" post.category }}">{{ post.category }}</a>
+       <a class="round-tag"  href="{{ abs-url "category" post.category }}">{{ post.category }}</a>
    {{ #each post.tags as |t| }}
-       <a href="{{ abs-url "tag" t }}">{{ t }}</a>
+       <a class="square-tag" href="{{ abs-url "tag" t }}">{{ t }}</a>
    {{ /each }}
    </footer>
 
