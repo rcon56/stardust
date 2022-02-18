@@ -19,7 +19,16 @@
    </footer>
 
   <!-- Post Nav -->
-  
+  {{ #if (gt paginator.num 1) }}
+  <nav class="post-nav">
+    {{ #if paginator.has_prev }}
+    <a class="prev" href="{{ paginator.prev_url }}"><span>←</span><span>{{ paginator.prev_name }}</span></a>
+    {{ /if }} 
+    {{ #if paginator.has_next  }}
+    <a class="next" href="{{ paginator.next_url }}"><span>{{ paginator.next_name }}</span><span>→</span></a>
+    {{ /if }}
+  </nav>
+  {{ /if }}
 
   <!-- Disqus -->
   

@@ -1,6 +1,6 @@
 // use std::fs;
 // use std::collections::BTreeMap;
-use std::collections::{HashSet, HashMap};
+use std::collections::HashMap;
 use anyhow;
 
 use crate::models::paginator::Paginator;
@@ -58,40 +58,37 @@ impl Builder {
                 .push(post);
         }
 
-        for post in posts.iter() {
-            self.make_post(post).render_to_write(ctx)?;
-        }
+        // single page - posts
+        self.make_posts_with_paginator(&posts)
+            .iter()
+            .try_for_each(|p| p.render_to_write(ctx).ok());
 
-        /////////////////// tags //////////////////////
-        // self.make_post(&Post {
-        //     date: "".to_string(),
-        //     author: "".to_string(),
-        //     title: "tag/all".to_string(),
-        //     tags: tags.iter().cloned().collect::<Vec<String>>(),
-        //     content: "".to_string(),
-        // }).render_to_write(ctx)?;
-        ///////////////////////////////////////////////
+        // list page - posts
         self.make_lists_with_paginator(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, &posts.iter().collect::<Vec<_>>())
             .iter()
             .try_for_each(|p| p.render_to_write(ctx).ok());
 
-        self.make_coll(&PageArg{title: "TAGS", url: "/tag", ekind: Some("tag")},
-            &tag2posts).render_to_write(ctx)?;
-
-        self.make_coll(&PageArg{title: "CATEGORIES", url: "/category", ekind: Some("category")},
-            &cate2posts).render_to_write(ctx)?;
-
+        // list page - tags
         for (tag, posts_in_tag) in tag2posts.iter() {
             self.make_lists_with_paginator(&PageArg{title: tag, url: &format!("/tag/{}", tag), ekind: Some("post")}, posts_in_tag)
                 .iter()
                 .try_for_each(|p| p.render_to_write(ctx).ok());
         }
 
+        // list page - categories
         for (tag, posts_in_cate) in cate2posts.iter() {
             self.make_lists_with_paginator(&PageArg{title: tag, url: &format!("/category/{}", tag), ekind: Some("post")}, posts_in_cate)
                 .iter()
                 .try_for_each(|p| p.render_to_write(ctx).ok());                
         }
+
+        // coll page - tags
+        self.make_coll(&PageArg{title: "TAGS", url: "/tag", ekind: Some("tag")},
+            &tag2posts).render_to_write(ctx)?;
+
+        // coll page - categories
+        self.make_coll(&PageArg{title: "CATEGORIES", url: "/category", ekind: Some("category")},
+            &cate2posts).render_to_write(ctx)?;
 
         println!("Build posts ok.");
 
@@ -144,7 +141,19 @@ impl Builder {
         }
     }
 
-    fn make_post(&self, post: &Post) -> Page<Post> {
+    fn make_posts_with_paginator(&self, posts: &[Post]) -> Vec<Page<Post>> {
+        let post_url_gen = |p: &Post| -> (String, String) {
+            (format!("/post/{}", utils::str2path(&p.title)), p.title.to_string())
+        };
+        (0..posts.len()).map(|i| {
+            let pg = Paginator::new_for_post(posts.len(), 
+                if i==0 {None} else {Some(post_url_gen(posts.get(i-1).unwrap()))}, 
+                if i>= posts.len()-1 {None} else {Some(post_url_gen(posts.get(i+1).unwrap()))});
+            self.make_post(posts.get(i).unwrap(), Some(pg))
+        }).collect()
+    }
+
+    fn make_post(&self, post: &Post, pg: Option<Paginator>) -> Page<Post> {
         Page {
             file_dir: self.output_dir.to_string(),
             url_path: format!("/post/{}", utils::str2path(&post.title)),
@@ -157,7 +166,7 @@ impl Builder {
                 kind: "post".to_string(),
             },
             block: Some(post.clone()),
-            paginator: None,   // TODO: add post paginator
+            paginator: pg,
         }
     }
 
