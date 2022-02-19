@@ -11,7 +11,7 @@ pub const BASE_TEMPLATE: &str = "base";
 const FOOTER_TEMPLATE: &str = "footer";
 const HEAD_TEMPLATE: &str = "head";
 const HEADER_TEMPLATE: &str = "header";
-const POST_TEMPLATE: &str = "single";
+const POST_TEMPLATE: &str = "post";
 const LIST_TEMPLATE: &str = "list";
 const COLL_TEMPLATE: &str = "coll";
 

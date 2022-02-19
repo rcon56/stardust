@@ -14,15 +14,7 @@
       {{ #if (eq page.kind "main") }}
         <h1 class="main-title">StarDust</h1>
       {{ else }}
-        {{ #if (eq page.kind "post") }}
-          {{ > single }}
-        {{ else }}
-          {{ #if (eq page.kind "list") }}
-            {{ > list }}
-          {{ else }}
-            {{ > coll }}
-          {{ /if }}
-        {{ /if }}
+        {{> (lookup (lookup this "page") "kind")}}
       {{ /if }}
     </main>
 
