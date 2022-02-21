@@ -38,31 +38,31 @@ impl<'a> RenderContext<'a> {
 
         // TODO: more registers
         ctx.tpl_render
-            .register_template_file(BASE_TEMPLATE, format!("{}{}/_default/base.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(BASE_TEMPLATE, format!("{}/_default/base.hbs", &config.layout_dir))
             .expect("Register base template error");
 
         ctx.tpl_render
-            .register_template_file(POST_TEMPLATE, format!("{}{}/_default/single.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(POST_TEMPLATE, format!("{}/_default/single.hbs",&config.layout_dir))
             .expect("Register post template error");
 
         ctx.tpl_render
-            .register_template_file(LIST_TEMPLATE, format!("{}{}/_default/list.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(LIST_TEMPLATE, format!("{}/_default/list.hbs",&config.layout_dir))
             .expect("Register list template error");
 
         ctx.tpl_render
-            .register_template_file(COLL_TEMPLATE, format!("{}{}/_default/coll.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(COLL_TEMPLATE, format!("{}/_default/coll.hbs",&config.layout_dir))
             .expect("Register coll template error");
 
         ctx.tpl_render
-            .register_template_file(FOOTER_TEMPLATE, format!("{}{}/partials/footer.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(FOOTER_TEMPLATE, format!("{}/partials/footer.hbs",&config.layout_dir))
             .expect("Register footer template error");
 
         ctx.tpl_render
-            .register_template_file(HEAD_TEMPLATE, format!("{}{}/partials/head.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(HEAD_TEMPLATE, format!("{}/partials/head.hbs",&config.layout_dir))
             .expect("Register head template error");
 
         ctx.tpl_render
-            .register_template_file(HEADER_TEMPLATE, format!("{}{}/partials/header.hbs", &config.base_dir, &config.layout_dir))
+            .register_template_file(HEADER_TEMPLATE, format!("{}/partials/header.hbs",&config.layout_dir))
             .expect("Register header template error");
 
         ctx.tpl_render
@@ -117,7 +117,7 @@ fn abs_url_helper(
 fn path_helper(
     h: &handlebars::Helper,
     _: &handlebars::Handlebars,
-    c: &handlebars::Context,
+    _: &handlebars::Context,
     _: &mut handlebars::RenderContext,
     out: &mut dyn handlebars::Output,
 ) -> Result<(), handlebars::RenderError> {

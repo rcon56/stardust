@@ -30,12 +30,12 @@ impl Poster {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
+// #[cfg(test)]
+// mod test {
+//     use super::*;
 
-    #[test]
-    fn read_test() {
-        let test_content = "---\nauthor:lds56\ndate: Feb 9 2022\n---# Title\nThis is Content";
-    }
-}
+//     #[test]
+//     fn read_test() {
+//         let test_content = "---\nauthor:lds56\ndate: Feb 9 2022\n---# Title\nThis is Content";
+//     }
+// }

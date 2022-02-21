@@ -45,8 +45,7 @@ impl Args {
             } => { 
                 println!("serving...");             
                 let cfg = models::config::Config::load(config)?;
-                let serve_dir = format!("{}{}", &cfg.base_dir, &cfg.output_dir);
-                actors::server::Server::new(host, port, no_watch, &serve_dir).serve(cfg).await
+                actors::server::Server::new(host, port, no_watch, &cfg.output_dir).serve(cfg).await
             },
             _ => bail!("Unsupported command"),
         }

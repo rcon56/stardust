@@ -24,8 +24,8 @@ impl Builder {
 
     pub fn from_config(config: &Config) -> Builder {
         Builder {
-            post_dir: format!("{}{}", &config.base_dir, &config.post_dir),
-            output_dir: format!("{}{}", &config.base_dir, &config.output_dir),
+            post_dir: format!("{}", &config.post_dir),
+            output_dir: format!("{}", &config.output_dir),
         }
     }
 

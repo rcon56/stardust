@@ -6,7 +6,7 @@ use tower_http::services::ServeDir;
 use super::render::RenderContext;
 use super::watcher::Watcher;
 use super::config::Config;
-use super::site::{Site, SiteData};
+use super::site::{Site};
 
 const LOCALHOST_ALIAS: &str = "localhost";
 const LOCALHOST: &str = "127.0.0.1";
@@ -34,12 +34,9 @@ impl Server {
     pub async fn serve(&self, config: Config) -> anyhow::Result<()> {
 
         let site = Site {
-            base_dir: config.base_dir.clone(),
-            data: SiteData {
-                base_url: self.net_addr.to_string(),
-                title: "Stardust Ocean".to_string(),
-                description: "Unbreakable Ruby!".to_string(),
-            },
+            base_url: self.net_addr.to_string(),
+            title: "Stardust Ocean".to_string(),
+            description: "Unbreakable Ruby!".to_string(),
         };
 
         println!("? site: {:?}", site);

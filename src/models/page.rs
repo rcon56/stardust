@@ -42,7 +42,7 @@ impl<T> Renderable for Page<T> where T: Block + Serialize {
     fn render_to_write(&self, ctx: &RenderContext) -> anyhow::Result<()> {
         
         let mut data = Map::new();
-        data.insert("site".to_string(), to_json(&ctx.site.data));
+        data.insert("site".to_string(), to_json(&ctx.site));
         data.insert("page".to_string(), to_json(&self.data));
         if let Some(it) = &self.block {
             data.insert(it.kind().to_string(), to_json(it));

@@ -1,0 +1,4 @@
+[build.dir]
+layout = './site/layouts'
+output = './site/public'
+post = './site/content'

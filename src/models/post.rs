@@ -4,7 +4,7 @@ use anyhow;
 use serde::{Serialize, Deserialize, Serializer};
 use time::{Date, Time};
 use time::format_description::FormatItem;
-use time::macros::{date, time, format_description as fd};
+use time::macros::{format_description as fd};
 // use time::macros::format_description;
 
 use super::page::Block;
@@ -93,6 +93,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use time::macros::{date, time};
 
     #[test]
     fn parse_date() -> time::Result<()> {

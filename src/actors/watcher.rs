@@ -8,7 +8,7 @@ use super::config::Config;
 
 pub struct Watcher {
     hotwatch: Hotwatch,
-    dir: String,
+    watch_dir: String,
 }
 
 impl Watcher {
@@ -16,7 +16,7 @@ impl Watcher {
     pub fn from_config(config: &Config) -> Watcher {
         Watcher {
             hotwatch: Hotwatch::new().expect("hotwatch failed to initialize!"),
-            dir: config.post_dir.clone(),
+            watch_dir: config.post_dir.clone(),
         }
     }
     
@@ -45,9 +45,7 @@ impl Watcher {
         let builder = Builder::from_config(config);
         builder.build(ctx)?;
 
-        let abs_post_dir = format!("{}{}", &ctx.site.base_dir, &self.dir);
-
-        self.hotwatch.watch(&abs_post_dir, |_| { 
+        self.hotwatch.watch(&self.watch_dir, |_| { 
             println!("Rebuilding..."); 
         })?;
 
