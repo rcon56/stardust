@@ -4,7 +4,8 @@ pub mod config;
 pub mod post;
 pub mod list;
 pub mod paginator;
+pub mod archive;
 
-mod item;
+pub mod entry;
 
 use crate::actors::render;

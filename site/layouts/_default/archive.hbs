@@ -1,0 +1,30 @@
+<!-- Main Title -->
+  <header class="post-title">
+    <h1>Archive</h1>
+  </header>
+
+<!-- $pages -->
+
+<!-- Archives -->
+{{ #each archive as |ar| }}
+  <div class="archive-year">
+    <h2 class="archive-year-header">
+      {{ ar.year }}
+    </h2>
+  <div class="archive-month">
+    <h3 class="archive-month-header">
+      {{ ar.month }}
+    </h3>
+    <div class="archive-posts">
+    {{ #each ar.entries }}
+      <article class="post-entry">
+        <h2>{{ title }}</h2>
+        <time>{{ date }}</time>
+        <a href="{{ abs-url 'post' (as-path title)  }}"></a>
+      </article>
+    {{ /each }}
+    </div>
+  </div>
+  </div>
+{{ /each }}
+

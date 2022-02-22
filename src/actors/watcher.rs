@@ -40,12 +40,12 @@ impl Watcher {
     // }
 
     pub fn watching(&mut self, ctx: &RenderContext, config: &Config) -> anyhow::Result<()> {
-//        self.watch().expect("failed to watch");
-
+        
         let builder = Builder::from_config(config);
         builder.build(ctx)?;
 
         self.hotwatch.watch(&self.watch_dir, |_| { 
+            // builder.build(ctx).expect("Rebuilding error!");
             println!("Rebuilding..."); 
         })?;
 

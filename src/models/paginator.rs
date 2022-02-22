@@ -12,17 +12,6 @@ pub struct Paginator {
 }
 
 impl Paginator {
-    pub fn init(num: usize) -> Paginator {
-        Paginator {
-            num: num,
-            has_next: false,
-            has_prev: false,
-            next_url: "".to_string(),
-            prev_url: "".to_string(),
-            prev_name: None,
-            next_name: None,
-        }
-    }
 
     pub fn new(num: usize, prev_url: Option<String>, next_url: Option<String>) -> Paginator {
         Paginator { 

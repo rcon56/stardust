@@ -29,7 +29,7 @@ pub struct PageData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Page<T: Block + Serialize> {
+pub struct Page<T: Serialize> {
     pub file_dir: String,
     pub url_path: String,
     pub tpl_name: String,
@@ -38,14 +38,14 @@ pub struct Page<T: Block + Serialize> {
     pub paginator: Option<Paginator>,
 }
 
-impl<T> Renderable for Page<T> where T: Block + Serialize {
+impl<T> Renderable for Page<T> where T: Serialize {
     fn render_to_write(&self, ctx: &RenderContext) -> anyhow::Result<()> {
         
         let mut data = Map::new();
         data.insert("site".to_string(), to_json(&ctx.site));
         data.insert("page".to_string(), to_json(&self.data));
         if let Some(it) = &self.block {
-            data.insert(it.kind().to_string(), to_json(it));
+            data.insert(self.data.kind.clone(), to_json(it));
         }
         if let Some(pg) = &self.paginator {
             data.insert("paginator".to_string(), to_json(pg));

@@ -10,8 +10,10 @@ use super::poster::Poster;
 use super::render::{RenderContext, Renderable, BASE_TEMPLATE};
 use super::page::{Page, PageData, PageArg};
 use super::post::{Post, Front};
-use super::list::{List, ListEntry};
+use super::list::List;
+use super::entry::Entry;
 use super::config::Config;
+use super::archive::Archive;
 
 const POST_NUM_PER_PAGE: usize = 2;
 
@@ -38,6 +40,8 @@ impl Builder {
 
         let mut posts = self.find_posts();
         posts.sort();
+
+        let ref_posts= posts.iter().collect::<Vec<_>>();
         // println!("Posts: {:?}", posts);
         // let tags: HashSet<String> = HashSet::from_iter(
            // posts.iter().flat_map(|p| p.tags.iter()).into_iter().cloned());
@@ -64,7 +68,7 @@ impl Builder {
             .try_for_each(|p| p.render_to_write(ctx).ok());
 
         // list page - posts
-        self.make_lists_with_paginator(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, &posts.iter().collect::<Vec<_>>())
+        self.make_lists_with_paginator(&PageArg {title: "POSTS", url: "/post", ekind: Some("post")}, &ref_posts)
             .iter()
             .try_for_each(|p| p.render_to_write(ctx).ok());
 
@@ -89,6 +93,9 @@ impl Builder {
         // coll page - categories
         self.make_coll(&PageArg{title: "CATEGORIES", url: "/category", ekind: Some("category")},
             &cate2posts).render_to_write(ctx)?;
+
+        // archive page - archive
+        self.make_archivess(&ref_posts).render_to_write(ctx)?;
 
         println!("Build posts ok.");
 
@@ -186,10 +193,11 @@ impl Builder {
                 title: arg.title.to_string(),
                 kind: arg.ekind.unwrap_or("").to_string(),
                 entries: post_group.iter().map(|(k, p)| 
-                    ListEntry {
+                    Entry {
                         title: k.to_string(),
                         date: "".to_string(),
-                        count: p.len(),
+                        count: Some(p.len()),
+                        digest: None,
                     }).collect()
             }),
             paginator: None,
@@ -227,13 +235,56 @@ impl Builder {
             block: Some(List {
                 kind: arg.ekind.unwrap_or("").to_string(),
                 title: arg.title.to_string(),
-                entries: posts.iter().map(|p| ListEntry {
+                entries: posts.iter().map(|p| Entry {
                     title: p.title.clone(),
                     date: p.date_str(),
-                    count: 1usize,
+                    count: None,
+                    digest: Some(format!("{}...", p.digest())),
                 }).collect(),
             }),
             paginator: pg,
+        }
+    }
+
+    fn make_archivess(&self, posts: &[&Post]) -> Page<Vec<Archive>> {
+
+        let mut tls = vec![];
+        let (mut y, mut m) = (0, time::Month::January);
+        for p in posts {
+            if  p.date.year() != y || p.date.month() != m {
+                y = p.date.year();
+                m = p.date.month();
+                tls.push(Archive {
+                    year: y as i32,
+                    month: m,
+                    entries: vec![],
+                });
+            } 
+            if let Some(last) = tls.last_mut() {
+                last.entries.push(Entry { 
+                    title: p.title.to_string(), 
+                    date: p.date_str(), 
+                    count: None, 
+                    digest: Some(format!("{}...", p.digest())),
+                })
+            }
+        }
+
+        print!("{:?}", tls);
+
+        Page {
+            file_dir: self.output_dir.to_string(),
+            url_path: "/archive".to_string(),
+            tpl_name: BASE_TEMPLATE.to_string(),
+            data: PageData {
+                content: "".to_string(),
+                summary: "This is summary.".to_string(),
+                author: "lds56".to_string(),
+                has_menu: true,
+                kind: "archive".to_string(),
+            },
+            block: Some(tls),
+            paginator: None,
         }
     }
 

@@ -51,6 +51,11 @@ impl Post {
         })
     }
 
+    pub fn digest(&self) -> &str {
+        // if self.content.len() < 100 { &self.content } else { &self.content[0..100] }
+        "..."
+    }
+
     pub fn date_str(&self) -> String {
         self.date.format(&POST_DATE_FORMAT).unwrap_or("Jan 1 1970".to_string())
     }
