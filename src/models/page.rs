@@ -8,10 +8,10 @@ use anyhow;
 use super::paginator::Paginator;
 use super::render::{RenderContext, Renderable};
 
+#[deprecated]
 pub trait Block {
     fn kind(&self) -> &str;
 }
-
 
 pub struct PageArg<'a> {
     pub title: &'a str,
@@ -20,32 +20,32 @@ pub struct PageArg<'a> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PageData {
-    pub content: String,
+pub struct Page {
     pub summary: String,
     pub author: String,
-    pub kind: String,
+    pub block: String,      // block name
+    pub kind: String,       // partial template name
     pub has_menu: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Page<T: Serialize> {
+pub struct PageData<T: Serialize> {
     pub file_dir: String,
     pub url_path: String,
     pub tpl_name: String,
-    pub data: PageData,
+    pub page: Page,
     pub block: Option<T>,
     pub paginator: Option<Paginator>,
 }
 
-impl<T> Renderable for Page<T> where T: Serialize {
+impl<T> Renderable for PageData<T> where T: Serialize {
     fn render_to_write(&self, ctx: &RenderContext) -> anyhow::Result<()> {
         
         let mut data = Map::new();
         data.insert("site".to_string(), to_json(&ctx.site));
-        data.insert("page".to_string(), to_json(&self.data));
+        data.insert("page".to_string(), to_json(&self.page));
         if let Some(it) = &self.block {
-            data.insert(self.data.kind.clone(), to_json(it));
+            data.insert(self.page.block.clone(), to_json(it));
         }
         if let Some(pg) = &self.paginator {
             data.insert("paginator".to_string(), to_json(pg));

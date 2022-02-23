@@ -39,7 +39,7 @@ impl Builder {
         println!("Build main page ok.");
 
         let mut posts = self.find_posts();
-        posts.sort();
+        posts.sort_by(|a, b| b.cmp(a));
 
         let ref_posts= posts.iter().collect::<Vec<_>>();
         // println!("Posts: {:?}", posts);
@@ -131,16 +131,16 @@ impl Builder {
         // }]
     }
 
-    fn make_main(&self) -> Page<Post> {
-        Page {
+    fn make_main(&self) -> PageData<Post> {
+        PageData {
             file_dir: self.output_dir.to_string(),
             url_path: "/".to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
+            page: Page {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
+                block: "".to_string(),
                 kind: "main".to_string(),
             },
             block: None,
@@ -148,7 +148,7 @@ impl Builder {
         }
     }
 
-    fn make_posts_with_paginator(&self, posts: &[Post]) -> Vec<Page<Post>> {
+    fn make_posts_with_paginator(&self, posts: &[Post]) -> Vec<PageData<Post>> {
         let post_url_gen = |p: &Post| -> (String, String) {
             (format!("/post/{}", utils::str2path(&p.title)), p.title.to_string())
         };
@@ -160,16 +160,16 @@ impl Builder {
         }).collect()
     }
 
-    fn make_post(&self, post: &Post, pg: Option<Paginator>) -> Page<Post> {
-        Page {
+    fn make_post(&self, post: &Post, pg: Option<Paginator>) -> PageData<Post> {
+        PageData {
             file_dir: self.output_dir.to_string(),
             url_path: format!("/post/{}", utils::str2path(&post.title)),
             tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
+            page: Page {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
+                block: "post".to_string(),
                 kind: "post".to_string(),
             },
             block: Some(post.clone()),
@@ -177,17 +177,17 @@ impl Builder {
         }
     }
 
-    fn make_coll(&self, arg: &PageArg, post_group: &HashMap<&String, Vec<&Post>>) -> Page<List> {
-        Page {
+    fn make_coll(&self, arg: &PageArg, post_group: &HashMap<&String, Vec<&Post>>) -> PageData<List> {
+        PageData {
             file_dir: self.output_dir.to_string(),
             url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
+            page: Page {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
-                kind: "coll".to_string(),
+                block: "list".to_string(),
+                kind: "coll".to_string(),                
             },
             block: Some(List {
                 title: arg.title.to_string(),
@@ -204,11 +204,11 @@ impl Builder {
         }
     }
 
-    fn make_lists_with_paginator(&self, arg: &PageArg, posts: &[&Post]) -> Vec<Page<List>> {
+    fn make_lists_with_paginator(&self, arg: &PageArg, posts: &[&Post]) -> Vec<PageData<List>> {
         let pg_sz = (posts.len() as f32 / POST_NUM_PER_PAGE as f32).ceil() as usize;
         posts.chunks(POST_NUM_PER_PAGE)
             .enumerate()
-            .map(|(pg_idx, post_chunk)| -> Page<List> {
+            .map(|(pg_idx, post_chunk)| -> PageData<List> {
                 let pg = Paginator::new_at(pg_sz, pg_idx as i32, arg.url);
                 self.make_list(&PageArg {
                     title: arg.title, 
@@ -220,16 +220,16 @@ impl Builder {
     }
 
 
-    fn make_list(&self, arg: &PageArg, posts: &[&Post], pg: Option<Paginator>) -> Page<List> {
-        Page {
+    fn make_list(&self, arg: &PageArg, posts: &[&Post], pg: Option<Paginator>) -> PageData<List> {
+        PageData {
             file_dir: self.output_dir.to_string(),
             url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
+            page: Page {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
+                block: "list".to_string(),
                 kind: "list".to_string(),
             },
             block: Some(List {
@@ -246,7 +246,7 @@ impl Builder {
         }
     }
 
-    fn make_archivess(&self, posts: &[&Post]) -> Page<Vec<Archive>> {
+    fn make_archivess(&self, posts: &[&Post]) -> PageData<Vec<Archive>> {
 
         let mut tls = vec![];
         let (mut y, mut m) = (0, time::Month::January);
@@ -270,17 +270,15 @@ impl Builder {
             }
         }
 
-        print!("{:?}", tls);
-
-        Page {
+        PageData {
             file_dir: self.output_dir.to_string(),
             url_path: "/archive".to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
-            data: PageData {
-                content: "".to_string(),
+            page: Page {
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
+                block: "archives".to_string(),
                 kind: "archive".to_string(),
             },
             block: Some(tls),
@@ -288,12 +286,12 @@ impl Builder {
         }
     }
 
-    // fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> Page<List> {
-    //     Page {
+    // fn make_filter_list(&self, list_name: &str, posts: &[Post], pred: impl FnMut(&&Post) -> bool) -> PageData<List> {
+    //     PageData {
     //         file_dir: self.output_dir.to_string(),
     //         url_path: format!("/{}", list_name),
     //         tpl_name: BASE_TEMPLATE.to_string(),
-    //         data: PageData {
+    //         page: Page {
     //             content: "".to_string(),
     //             summary: "This is summary.".to_string(),
     //             author: "lds56".to_string(),

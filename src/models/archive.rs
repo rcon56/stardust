@@ -3,7 +3,6 @@ use serde::{Serialize, Serializer};
 use time::Month;
 
 use super::entry::Entry;
-use super::page::Block;
 
 
 #[derive(Debug, Clone, Serialize)]
@@ -14,11 +13,11 @@ pub struct Archive {
     pub entries: Vec<Entry>,
 }
 
-impl Block for Archive {
-    fn kind(&self) -> &str {
-        "archive"
-    }
-}
+// impl Block for Archive {
+//     fn kind(&self) -> &str {
+//         "archive"
+//     }
+// }
 
 fn serialize_month<S>(m: &Month, s: S) -> Result<S::Ok, S::Error>
 where

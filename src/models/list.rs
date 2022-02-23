@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use super::page::Block;
+// use super::page::Block;
 use super::entry::Entry;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,8 +17,8 @@ pub struct List {
     pub entries: Vec<Entry>,
 }
 
-impl Block for List {
-    fn kind(&self) -> &str {
-        "list"
-    }
-}
+// impl Block for List {
+//     fn kind(&self) -> &str {
+//         "list"
+//     }
+// }

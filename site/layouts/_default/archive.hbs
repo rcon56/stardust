@@ -6,7 +6,7 @@
 <!-- $pages -->
 
 <!-- Archives -->
-{{ #each archive as |ar| }}
+{{ #each archives as |ar| }}
   <div class="archive-year">
     <h2 class="archive-year-header">
       {{ ar.year }}
@@ -15,10 +15,10 @@
     <h3 class="archive-month-header">
       {{ ar.month }}
     </h3>
-    <div class="archive-posts">
+    <div class="archive-posts">      
     {{ #each ar.entries }}
       <article class="post-entry">
-        <h2>{{ title }}</h2>
+        <h3>{{ title }}</h3>
         <time>{{ date }}</time>
         <a href="{{ abs-url 'post' (as-path title)  }}"></a>
       </article>

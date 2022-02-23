@@ -7,9 +7,8 @@ use time::format_description::FormatItem;
 use time::macros::{format_description as fd};
 // use time::macros::format_description;
 
-use super::page::Block;
+// use super::page::Block;
 
-const KIND: &str = "post";
 const POST_DATE_FORMAT: &[FormatItem] = fd!("[month repr:short] [day padding:none] [year]");
 const POST_TIME_FORMAT: &[FormatItem] = fd!("[hour]:[minute]:[second]");
 
@@ -46,8 +45,8 @@ impl Post {
             title: front.title,
             category: front.category.unwrap_or("uncategorized".to_string()),
             tags: front.tags.unwrap_or(vec![]),
-            content: content,
-            url: url,
+            content,
+            url,
         })
     }
 
@@ -65,11 +64,11 @@ impl Post {
     }
 }
 
-impl Block for Post {
-    fn kind(&self) -> &str {
-        KIND
-    }
-}
+// impl Block for Post {
+//     fn kind(&self) -> &str {
+//         KIND
+//     }
+// }
 
 impl PartialOrd for Post {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
