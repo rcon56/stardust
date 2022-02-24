@@ -1,10 +1,12 @@
 use std::{net::SocketAddr, str::FromStr, convert::Infallible};
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use anyhow;
 use axum::{http::StatusCode, service, Router};
 use tower_http::services::ServeDir;
 
 use super::render::RenderContext;
 use super::watcher::Watcher;
+use super::builder::Builder;
 use super::config::Config;
 use super::site::{Site};
 
@@ -46,11 +48,23 @@ impl Server {
             tokio::task::spawn_blocking(move || {
 
                 let ctx = RenderContext::new(&site, &config);
+                let builder = Builder::from_config(&config);
+                builder.build(&ctx).expect("lll");
+
+                let fc = AtomicBool::new(false).into();
 
                 let mut watcher = Watcher::from_config(&config);
-                match watcher.watching(&ctx, &config) {
+                match watcher.watch(Arc::clone(&fc)) {
                     Ok(_)  => println!("Watch ok!"),
                     Err(e) => println!("Watch error: {}", e),
+                }
+
+                loop {
+                    if fc.load(Ordering::Relaxed) {
+                        builder.build(&ctx).expect("lll");
+                        fc.store(false, Ordering::Relaxed);
+                    }
+                    std::thread::sleep(std::time::Duration::from_secs(1));
                 }
             });
         }

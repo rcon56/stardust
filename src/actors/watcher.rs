@@ -1,5 +1,6 @@
 use hotwatch::Hotwatch;	
 use std::{thread, time::Duration};
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use anyhow;
 
 use super::render::RenderContext;
@@ -39,19 +40,12 @@ impl Watcher {
     //     Ok(())
     // }
 
-    pub fn watching(&mut self, ctx: &RenderContext, config: &Config) -> anyhow::Result<()> {
-        
-        let builder = Builder::from_config(config);
-        builder.build(ctx)?;
+    pub fn watch(&mut self, file_changed: Arc<AtomicBool>) -> anyhow::Result<()> {
 
-        self.hotwatch.watch(&self.watch_dir, |_| { 
-            // builder.build(ctx).expect("Rebuilding error!");
+        self.hotwatch.watch(&self.watch_dir, move |_| { 
+            file_changed.store(true, Ordering::Relaxed);
             println!("Rebuilding..."); 
         })?;
-
-        loop {
-            thread::sleep(Duration::from_secs(1));
-        }
 
         Ok(())
     }

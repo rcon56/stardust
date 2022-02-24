@@ -108,7 +108,7 @@ impl Builder {
             .iter()
             .map(|(front, body)| -> anyhow::Result<Post> {
 
-                println!("? front: {:?}, body: {:?}", front, body);
+                // println!("? front: {:?}, body: {:?}", front, body);
                 let post_front: Front = serde_yaml::from_str(front)?;
                 let post_url = format!("/post/{}", utils::str2path(&post_front.title));
 
@@ -272,7 +272,7 @@ impl Builder {
 
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: "/archive".to_string(),
+            url_path: "/archives".to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
                 summary: "This is summary.".to_string(),

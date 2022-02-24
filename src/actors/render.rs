@@ -54,11 +54,9 @@ impl<'a> RenderContext<'a> {
             .register_template_file(COLL_TEMPLATE, format!("{}/_default/coll.hbs",&config.layout_dir))
             .expect("Register coll template error");
 
-        println!("tegister arr");
         ctx.tpl_render
             .register_template_file(ARCHIVE_TEMPLATE, format!("{}/_default/archive.hbs", &config.layout_dir))
             .expect("Register archive template error");
-            println!("tegister arr ok");
 
         ctx.tpl_render
             .register_template_file(FOOTER_TEMPLATE, format!("{}/partials/footer.hbs",&config.layout_dir))
