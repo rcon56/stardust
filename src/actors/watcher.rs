@@ -1,10 +1,9 @@
 use hotwatch::Hotwatch;	
+use hotwatch::notify::DebouncedEvent;
 use std::{thread, time::Duration};
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use anyhow;
 
-use super::render::RenderContext;
-use super::builder::Builder;
 use super::config::Config;
 
 pub struct Watcher {
@@ -42,9 +41,14 @@ impl Watcher {
 
     pub fn watch(&mut self, file_changed: Arc<AtomicBool>) -> anyhow::Result<()> {
 
-        self.hotwatch.watch(&self.watch_dir, move |_| { 
-            file_changed.store(true, Ordering::Relaxed);
-            println!("Rebuilding..."); 
+        self.hotwatch.watch(&self.watch_dir, move |ev| { 
+            match ev {
+                DebouncedEvent::Create(path) |
+                DebouncedEvent::Write(path)  |
+                DebouncedEvent::Remove(path)  => file_changed.store(true, Ordering::Relaxed),
+                DebouncedEvent::Rename(path0, path1) => file_changed.store(true, Ordering::Relaxed),
+                _ => {},
+            }            
         })?;
 
         Ok(())

@@ -41,33 +41,38 @@ impl Server {
             description: "Unbreakable Ruby!".to_string(),
         };
 
+        let no_watch = self.no_watch;
         println!("? site: {:?}", site);
-
-        if !self.no_watch {
+        tokio::task::spawn_blocking(move || {
+    
             println!("watching...");
-            tokio::task::spawn_blocking(move || {
+            let ctx = RenderContext::new(&site, &config);
+            let builder = Builder::from_config(&config);
+            builder.build(&ctx).expect("Failed to build");
 
-                let ctx = RenderContext::new(&site, &config);
-                let builder = Builder::from_config(&config);
-                builder.build(&ctx).expect("lll");
+            let fc = AtomicBool::new(false).into();
 
-                let fc = AtomicBool::new(false).into();
-
+            if !no_watch {
                 let mut watcher = Watcher::from_config(&config);
                 match watcher.watch(Arc::clone(&fc)) {
                     Ok(_)  => println!("Watch ok!"),
                     Err(e) => println!("Watch error: {}", e),
                 }
 
+                println!("monitoring...");
                 loop {
                     if fc.load(Ordering::Relaxed) {
-                        builder.build(&ctx).expect("lll");
+                        println!("Rebuilding...");                     
+                        if let Err(e) = builder.build(&ctx) {
+                            println!("Rebuilding err - {}", e.to_string());
+                        }
                         fc.store(false, Ordering::Relaxed);
                     }
                     std::thread::sleep(std::time::Duration::from_secs(1));
                 }
-            });
-        }
+            }
+        });
+    
     
         println!("launching...");
         let app = Router::new().nest(
@@ -84,8 +89,6 @@ impl Server {
         axum::Server::bind(&self.net_addr)
             .serve(app.into_make_service())
             .await?;
-    
-        println!("serve done");
 
         Ok(())
     }
