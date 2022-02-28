@@ -1,5 +1,7 @@
 use anyhow;
 use handlebars::Handlebars;
+use handlebars::handlebars_helper;
+use serde_json::Value as Json;
 // use pulldown_cmark::Parser;
 
 use crate::utils;
@@ -76,6 +78,18 @@ impl<'a> RenderContext<'a> {
         ctx.tpl_render
             .register_helper("as-path", Box::new(path_helper));
 
+        handlebars_helper!(str_suffix: |s0: Json, sfx: Json| {
+            if let Json::String(ss0) = s0 {
+                if let Json::String(ssfx) = sfx {
+                    ss0.ends_with(ssfx)
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        });
+        ctx.tpl_render.register_helper("str-suffix", Box::new(str_suffix));
 
         return ctx;
     }
@@ -120,6 +134,26 @@ fn abs_url_helper(
 }
 
 fn path_helper(
+    h: &handlebars::Helper,
+    _: &handlebars::Handlebars,
+    _: &handlebars::Context,
+    _: &mut handlebars::RenderContext,
+    out: &mut dyn handlebars::Output,
+) -> Result<(), handlebars::RenderError> {
+
+    let param = h
+        .param(0)
+        .ok_or(handlebars::RenderError::new("Param 0 is required for path helper."))?
+        .value()
+        .as_str()
+        .ok_or(handlebars::RenderError::new("Param 0 is required to be string."))?;
+
+    out.write(&utils::str2path(param))?;
+    Ok(())
+}
+
+
+fn str_suffix_helper(
     h: &handlebars::Helper,
     _: &handlebars::Handlebars,
     _: &handlebars::Context,

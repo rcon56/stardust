@@ -28,11 +28,11 @@
   </script>
 
   <nav class="menu">
-    <a class="active" href="{{ abs-url "about" }}">About</a>
-    <a class="active" href="{{ abs-url "post" }}">Posts</a>
-    <a class="active" href="{{ abs-url "tag" }}">Tags</a>
-    <a class="active" href="{{ abs-url "category" }}">Categories</a>
-    <a class="active" href="{{ abs-url "archive" }}">Archives</a>
+    <a {{#if (str-suffix page.url "about")}} class="active" {{/if}} href="{{ abs-url "about" }}">About</a>
+    <a {{#if (str-suffix page.url "post")}} class="active" {{/if}}  href="{{ abs-url "post" }}">Posts</a>
+    <a {{#if (str-suffix page.url "tag")}} class="active" {{/if}} href="{{ abs-url "tag" }}">Tags</a>
+    <a {{#if (str-suffix page.url "category")}} class="active" {{/if}} href="{{ abs-url "category" }}">Categories</a>
+    <a {{#if (str-suffix page.url "archives")}} class="active" {{/if}} href="{{ abs-url "archives" }}">Archives</a>
   </nav>
 
 </header>

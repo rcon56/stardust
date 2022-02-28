@@ -21,6 +21,7 @@ pub struct PageArg<'a> {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Page {
+    pub url: String,
     pub summary: String,
     pub author: String,
     pub block: String,      // block name
@@ -31,7 +32,6 @@ pub struct Page {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageData<T: Serialize> {
     pub file_dir: String,
-    pub url_path: String,
     pub tpl_name: String,
     pub page: Page,
     pub block: Option<T>,
@@ -52,7 +52,7 @@ impl<T> Renderable for PageData<T> where T: Serialize {
         }
 
         // println!("data: {:?}", data);
-        let file_path = format!("{}{}", &self.file_dir, &self.url_path);
+        let file_path = format!("{}{}", &self.file_dir, &self.page.url);
         println!("dir: {:?}", &file_path);
 
         fs::create_dir_all(&file_path)?;

@@ -134,9 +134,9 @@ impl Builder {
     fn make_main(&self) -> PageData<Post> {
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: "/".to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
+                url: "/".to_string(),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
@@ -163,9 +163,9 @@ impl Builder {
     fn make_post(&self, post: &Post, pg: Option<Paginator>) -> PageData<Post> {
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: format!("/post/{}", utils::str2path(&post.title)),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
+                url: format!("/post/{}", utils::str2path(&post.title)),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
@@ -180,9 +180,9 @@ impl Builder {
     fn make_coll(&self, arg: &PageArg, post_group: &HashMap<&String, Vec<&Post>>) -> PageData<List> {
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
+                url: arg.url.to_string(),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
@@ -223,9 +223,9 @@ impl Builder {
     fn make_list(&self, arg: &PageArg, posts: &[&Post], pg: Option<Paginator>) -> PageData<List> {
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: arg.url.to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
+                url: arg.url.to_string(),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,
@@ -272,9 +272,9 @@ impl Builder {
 
         PageData {
             file_dir: self.output_dir.to_string(),
-            url_path: "/archives".to_string(),
             tpl_name: BASE_TEMPLATE.to_string(),
             page: Page {
+                url: "/archives".to_string(),
                 summary: "This is summary.".to_string(),
                 author: "lds56".to_string(),
                 has_menu: true,

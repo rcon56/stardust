@@ -41,6 +41,7 @@ impl Watcher {
 
     pub fn watch(&mut self, file_changed: Arc<AtomicBool>) -> anyhow::Result<()> {
 
+        // TODO: specify path
         self.hotwatch.watch(&self.watch_dir, move |ev| { 
             match ev {
                 DebouncedEvent::Create(path) |
