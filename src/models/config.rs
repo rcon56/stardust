@@ -15,8 +15,8 @@ impl Config {
         let cfg_toml = cfg_str.parse::<Value>()?;
         Ok(Config {
             post_dir: cfg_toml["build"]["dir"]["post"].as_str().unwrap_or("./site/content").to_string(),
-            output_dir: cfg_toml["build"]["dir"]["output"].as_str().unwrap_or("./site/content").to_string(),
-            layout_dir: cfg_toml["build"]["dir"]["layout"].as_str().unwrap_or("./site/content").to_string(),
+            output_dir: cfg_toml["build"]["dir"]["output"].as_str().unwrap_or("./site/public").to_string(),
+            layout_dir: cfg_toml["build"]["dir"]["layout"].as_str().unwrap_or("./site/layouts").to_string(),
         })
         // Ok(Config {
         //     post_dir: "./site/content/".to_string(),

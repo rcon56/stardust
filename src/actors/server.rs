@@ -35,14 +35,10 @@ impl Server {
 
     pub async fn serve(&self, config: Config) -> anyhow::Result<()> {
 
-        let site = Site {
-            base_url: self.net_addr.to_string(),
-            title: "Stardust Ocean".to_string(),
-            description: "Unbreakable Ruby!".to_string(),
-        };
-
-        let no_watch = self.no_watch;
+        let site = Site::new_base(self.net_addr.to_string());
+        let no_watch = self.no_watch;        
         println!("? site: {:?}", site);
+    
         tokio::task::spawn_blocking(move || {
     
             println!("watching...");
